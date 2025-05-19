@@ -3,7 +3,7 @@ import json
 from flask import Flask, request, Response, jsonify, send_from_directory
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.rest import Client
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,8 +13,9 @@ app = Flask(__name__)
 twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
 twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
 twilio_number = os.getenv("TWILIO_NUMBER")
-openai.api_key = os.getenv("OPENAI_API_KEY")
 client = Client(twilio_sid, twilio_token)
+
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 CONTACTS_FILE = "contacts.json"
 
@@ -47,11 +48,11 @@ def handle_reply():
     """
 
     try:
-        completion = openai.ChatCompletion.create(
+        completion = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}]
         )
-        content = completion["choices"][0]["message"]["content"]
+        content = completion.choices[0].message.content
         print("[GPT]:", content)
         data = json.loads(content)
 
@@ -63,17 +64,17 @@ def handle_reply():
         if telefone:
             print(f"Ligando para {nome} ({telefone}) com o recado: {mensagem}")
             call = client.calls.create(
-                twiml=f'<Response><Say>Recado de {twilio_number}: {mensagem}</Say></Response>',
+                twiml=f'<Response><Say voice="Polly.Camila" language="pt-BR">{mensagem}</Say></Response>',
                 to=telefone,
                 from_=twilio_number
             )
-            return _twiml_response("Tudo certo, estou repassando seu recado.", language="pt-BR", voice="Polly.Camila")
+            return _twiml_response("Tudo certo, estou repassando seu recado.")
         else:
-            return _twiml_response(f"Desculpe, não encontrei o número de {nome}.", language="pt-BR", voice="Polly.Camila")
+            return _twiml_response(f"Desculpe, não encontrei o número de {nome}.")
 
     except Exception as e:
         print("Erro:", e)
-        return _twiml_response("Não consegui interpretar o recado. Pode repetir?", language="pt-BR", voice="Polly.Camila")
+        return _twiml_response("Não consegui interpretar o recado. Pode repetir?")
 
 @app.route("/add-contact", methods=["POST"])
 def add_contact():
@@ -92,9 +93,8 @@ def serve_painel():
 
 def _twiml_response(texto):
     resp = VoiceResponse()
-    resp.say(texto)
+    resp.say(texto, language="pt-BR", voice="Polly.Camila")
     return Response(str(resp), mimetype="text/xml")
 
 if __name__ == "__main__":
     app.run(debug=True)
-
