@@ -41,7 +41,9 @@ def handle_reply():
     comandos_possiveis = [
         "avise o ", "avise a ",
         "mande um recado para o ", "mande um recado para a ",
-        "fale com o ", "fale com a "
+        "fale com o ", "fale com a ",
+        "peça para o", "peça para a",
+        "pede para o", "pede para a"
     ]
 
     try:
@@ -60,7 +62,7 @@ def handle_reply():
                 if telefone:
                     print(f"Ligando para {nome} ({telefone}) com o recado: {recado}")
                     call = client.calls.create(
-                        twiml=f'<Response><Say voice="Polly.Camila" language="pt-BR">Recado de {twilio_number}: {recado}</Say></Response>',
+                        twiml=f'<Response><Say voice="Polly.Camila" language="pt-BR">Aqui é da SunShield. Você tem um recado: {recado}</Say></Response>',
                         to=telefone,
                         from_=twilio_number
                     )
