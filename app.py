@@ -3,7 +3,6 @@ import json
 from flask import Flask, request, Response, jsonify, send_from_directory
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.rest import Client
-from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,8 +13,6 @@ twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
 twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
 twilio_number = os.getenv("TWILIO_NUMBER")
 client = Client(twilio_sid, twilio_token)
-
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 CONTACTS_FILE = "contacts.json"
 
@@ -41,40 +38,47 @@ def handle_reply():
     speech_text = request.form.get("SpeechResult", "").lower()
     print(f"[RECEBIDO] {speech_text}")
 
-    prompt = f"""
-    Extraia nome e recado da frase abaixo. Sempre retorne no formato JSON:
-    {{ "destinatario": "João", "recado": "a entrega foi feita" }}
-    Frase: "{speech_text}"
-    """
+    comandos_possiveis = [
+        "avise o ", "avise a ",
+        "mande um recado para o ", "mande um recado para a ",
+        "fale com o ", "fale com a "
+    ]
 
     try:
-        completion = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
+        for cmd in comandos_possiveis:
+            if speech_text.startswith(cmd):
+                partes = speech_text.replace(cmd, "", 1).split("que")
+                if len(partes) != 2:
+                    raise ValueError("Formato inválido.")
+
+                nome = partes[0].strip()
+                recado = partes[1].strip()
+
+                contacts = load_contacts()
+                telefone = contacts.get(nome.lower())
+
+                if telefone:
+                    print(f"Ligando para {nome} ({telefone}) com o recado: {recado}")
+                    call = client.calls.create(
+                        twiml=f'<Response><Say voice="Polly.Camila" language="pt-BR">Recado de {twilio_number}: {recado}</Say></Response>',
+                        to=telefone,
+                        from_=twilio_number
+                    )
+                    return _twiml_response("Tudo certo, estou repassando seu recado.", voice="Polly.Camila")
+                else:
+                    return _twiml_response(f"Desculpe, não encontrei o número de {nome}.", voice="Polly.Camila")
+
+        # Se nenhum comando conhecido for detectado
+        return _twiml_response(
+            "Desculpe, diga algo como: avise o João que a entrega foi feita.",
+            voice="Polly.Camila"
         )
-        content = completion.choices[0].message.content
-        print("[GPT]:", content)
-        data = json.loads(content)
-
-        nome = data.get("destinatario", "").lower()
-        mensagem = data.get("recado")
-        contacts = load_contacts()
-        telefone = contacts.get(nome)
-
-        if telefone:
-            print(f"Ligando para {nome} ({telefone}) com o recado: {mensagem}")
-            call = client.calls.create(
-                twiml=f'<Response><Say voice="Polly.Camila" language="pt-BR">{mensagem}</Say></Response>',
-                to=telefone,
-                from_=twilio_number
-            )
-            return _twiml_response("Tudo certo, estou repassando seu recado.")
-        else:
-            return _twiml_response(f"Desculpe, não encontrei o número de {nome}.")
-
     except Exception as e:
         print("Erro:", e)
-        return _twiml_response("Não consegui interpretar o recado. Pode repetir?")
+        return _twiml_response(
+            "Não consegui entender o recado. Tente dizer: avise o João que a entrega foi feita.",
+            voice="Polly.Camila"
+        )
 
 @app.route("/add-contact", methods=["POST"])
 def add_contact():
@@ -91,9 +95,9 @@ def add_contact():
 def serve_painel():
     return send_from_directory(".", "painel-contatos.html")
 
-def _twiml_response(texto):
+def _twiml_response(texto, voice="Polly.Camila"):
     resp = VoiceResponse()
-    resp.say(texto, language="pt-BR", voice="Polly.Camila")
+    resp.say(texto, language="pt-BR", voice=voice)
     return Response(str(resp), mimetype="text/xml")
 
 if __name__ == "__main__":
