@@ -29,7 +29,7 @@ def save_contacts(data):
 @app.route("/voice", methods=["POST"])
 def voice():
     response = VoiceResponse()
-    gather = Gather(input="speech", action="/handle-reply", method="POST", timeout=5)
+    gather = Gather(input="speech", action="/handle-reply", method="POST", timeout=5, language="pt-BR")
     gather.say("Você ligou para a SunShield. Como posso ajudar?", language="pt-BR", voice="Polly.Camila")
     response.append(gather)
     response.say("Não entendi o recado. Tente novamente.", language="pt-BR", voice="Polly.Camila")
