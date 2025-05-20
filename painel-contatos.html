@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel de Contatos</title>
+</head>
+<body>
+  <h1>Contatos</h1>
+  <ul id="lista-contatos"></ul>
+
+  <h2>Adicionar novo contato</h2>
+  <input id="nome" placeholder="Nome">
+  <input id="telefone" placeholder="Telefone (+55...)">
+  <button onclick="adicionarContato()">Salvar</button>
+
+  <script>
+    async function carregarContatos() {
+      const res = await fetch('/get-contacts');
+      const contatos = await res.json();
+      const lista = document.getElementById('lista-contatos');
+      lista.innerHTML = '';
+      for (const [nome, telefone] of Object.entries(contatos)) {
+        const item = document.createElement('li');
+        item.textContent = `${nome}: ${telefone}`;
+        lista.appendChild(item);
+      }
+    }
+
+    async function adicionarContato() {
+      const nome = document.getElementById('nome').value;
+      const telefone = document.getElementById('telefone').value;
+      const res = await fetch('/add-contact', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nome, telefone })
+      });
+      const result = await res.json();
+      alert(result.mensagem);
+      carregarContatos();
+    }
+
+    carregarContatos();
+  </script>
+</body>
+</html>
