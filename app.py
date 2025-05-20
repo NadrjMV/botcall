@@ -132,6 +132,19 @@ def add_contact():
     save_contacts(contacts)
     return jsonify({"status": "sucesso", "mensagem": f"{nome} salvo com sucesso."})
 
+@app.route("/delete-contact", methods=["POST"])
+def delete_contact():
+    data = request.get_json()
+    nome = data.get("nome", "").lower()
+
+    contacts = load_contacts()
+    if nome in contacts:
+        del contacts[nome]
+        save_contacts(contacts)
+        return jsonify({"status": "sucesso", "mensagem": f"{nome} removido com sucesso."})
+    else:
+        return jsonify({"status": "erro", "mensagem": f"{nome} não encontrado."})
+
 @app.route("/get-contacts", methods=["GET"])
 def get_contacts():
     return jsonify(load_contacts())
