@@ -2,16 +2,71 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel de Contatos</title>
+  <title>Painel de Contatos - SunShield</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 30px;
+    }
+
+    h1, h2 {
+      color: #333;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background: #fff;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 8px 12px;
+      margin-left: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    input {
+      padding: 8px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .form-container {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Contatos</h1>
+  <h1>📇 Painel de Contatos</h1>
   <ul id="lista-contatos"></ul>
 
-  <h2>Adicionar novo contato</h2>
-  <input id="nome" placeholder="Nome">
-  <input id="telefone" placeholder="Telefone (+55...)">
-  <button onclick="adicionarContato()">Salvar</button>
+  <div class="form-container">
+    <h2>➕ Adicionar novo contato</h2>
+    <input id="nome" placeholder="Nome">
+    <input id="telefone" placeholder="Telefone (+55...)">
+    <button onclick="adicionarContato()">Salvar</button>
+  </div>
 
   <script>
     async function carregarContatos() {
@@ -21,7 +76,12 @@
       lista.innerHTML = '';
       for (const [nome, telefone] of Object.entries(contatos)) {
         const item = document.createElement('li');
-        item.textContent = `${nome}: ${telefone}`;
+        item.innerHTML = `
+          <span><strong>${nome}</strong>: ${telefone}</span>
+          <div>
+            <button onclick="deletarContato('${nome}')">🗑️ Deletar</button>
+          </div>
+        `;
         lista.appendChild(item);
       }
     }
@@ -33,6 +93,20 @@
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ nome, telefone })
+      });
+      const result = await res.json();
+      alert(result.mensagem);
+      carregarContatos();
+    }
+
+    async function deletarContato(nome) {
+      const confirmar = confirm(`Tem certeza que deseja remover o contato "${nome}"?`);
+      if (!confirmar) return;
+
+      const res = await fetch('/delete-contact', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nome })
       });
       const result = await res.json();
       alert(result.mensagem);
