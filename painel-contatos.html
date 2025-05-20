@@ -55,10 +55,42 @@
     .form-container {
       margin-top: 20px;
     }
+
+    footer {
+      margin-top: 40px;
+      background-color: #e0e0e0;
+      padding: 15px 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      border-top: 1px solid #ccc;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .footer-content img {
+      height: 40px;
+      object-fit: contain;
+    }
+
+    @media (max-width: 600px) {
+      .footer-content {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+    
   </style>
 </head>
 <body>
-  <h1>📇 Painel de Contatos</h1>
+  <h1>📇 Painel de Contatos SunShield </h1>
   <ul id="lista-contatos"></ul>
 
   <div class="form-container">
@@ -115,5 +147,13 @@
 
     carregarContatos();
   </script>
+
+    <footer>
+    <div class="footer-content">
+      <span>© 2025 SunShield — Desenvolvido por <strong>Jordanlvs 💼</strong></span>
+      <img src="https://raw.githubusercontent.com/NadrjMV/botcall/main/static/logo.png" alt="Logo da empresa">
+    </div>
+  </footer>
+  
 </body>
 </html>
