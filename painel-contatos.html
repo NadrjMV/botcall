@@ -98,9 +98,20 @@
         gap: 10px;
       }
     }
+
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
   </style>
 </head>
 <body>
+  <div class="logo-container">
+    <img src="https://raw.githubusercontent.com/NadrjMV/botcall/main/logo.png" alt="Logo da empresa">
+  </div>
+  
   <main>
     <h1>📇 Painel de Contatos SunShield</h1>
     <ul id="lista-contatos"></ul>
@@ -110,15 +121,12 @@
       <input id="nome" placeholder="Nome">
       <input id="telefone" placeholder="Telefone (+55...)">
       <button onclick="adicionarContato()">Salvar</button>
-      <h5>Nomes devem ter a primeira letra minúscula</h4>
-
     </div>
   </main>
 
   <footer>
     <div class="footer-content">
       <span>© 2025 SunShield — Desenvolvido por <strong>Jordanlvs 💼</strong></span>
-      <img src="https://raw.githubusercontent.com/NadrjMV/botcall/main/logo.png" alt="Logo da empresa">
     </div>
   </footer>
 
